@@ -183,7 +183,7 @@ int main()
     SetConsoleCP(65001);
 
     char ans[100];
-    cout << "Вы хотите создать новый файл: ";
+    cout << "Вы хотите очистить файл (да/нет): ";
     cin >> ans;
     if (strcmp(ans, "yes") == 0 || strcmp(ans, "Yes") == 0 || 
         strcmp(ans, "да") == 0 || strcmp(ans, "Да") == 0){
