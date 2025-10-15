@@ -20,18 +20,54 @@ struct Book
 Book books[MAX_BOOK];
 int book_count = 0;
 
+void createNewBookFile(const char *filename)
+{
+    ofstream fout(filename);
+    if(fout)
+    {
+        fout.close();
+        cout << "Создан новый файл: " << filename << endl;
+        book_count = 0; // Сбрасываем счетчик книг, если нужно
+    }
+    else
+    {
+        cout << "Ошибка создания файла: " << filename << endl;
+    }
+}
+
 // Для загрузки записей файла
 void loadBook(const char *filename)
 {
     ifstream fin(filename);
-
     if(!fin)
         return;
-    while(fin >> books[book_count].name >> books[book_count].author >> books[book_count].year >> books[book_count].grade)
+    
+    string line;
+    while(getline(fin, line))
     {
-        book_count++;
+        // Пропускаем пустые строки
+        if(line.empty()) continue;
+        
+        size_t pos1 = line.find(';');
+        size_t pos2 = line.find(';', pos1 + 1);
+        size_t pos3 = line.find(';', pos2 + 1);
+        
+        // Проверяем, что найдены все разделители
+        if(pos1 != string::npos && pos2 != string::npos && pos3 != string::npos)
+        {
+            // Копируем строки в массивы символов
+            strncpy(books[book_count].name, line.substr(0, pos1).c_str(), 99);
+            strncpy(books[book_count].author, line.substr(pos1 + 1, pos2 - pos1 - 1).c_str(), 49);
+            books[book_count].year = stoi(line.substr(pos2 + 1, pos3 - pos2 - 1));
+            books[book_count].grade = stod(line.substr(pos3 + 1));
+            
+            // Гарантируем нулевое завершение строк
+            books[book_count].name[99] = '\0';
+            books[book_count].author[49] = '\0';
+            
+            book_count++;
+        }
     }
-
     fin.close();
 }
 
@@ -45,7 +81,7 @@ void saveBookToFile(const char *filename, Book b)
         cout << "Ошибка при сохранении файла!\n";
         return;
     }
-    fout << b.name << " " << b.author << " " << b.year << " " << b.grade << endl;
+    fout << b.name << ";" << b.author << ";" << b.year << ";" << b.grade << endl;
     fout.close();
 }
 
@@ -146,10 +182,17 @@ int main()
     SetConsoleOutputCP(65001); // 65001 = UTF-8
     SetConsoleCP(65001);
 
-    loadBook("book.txt");
+    char ans[100];
+    cout << "Вы хотите создать новый файл: ";
+    cin >> ans;
+    if (strcmp(ans, "yes") == 0 || strcmp(ans, "Yes") == 0 || 
+        strcmp(ans, "да") == 0 || strcmp(ans, "Да") == 0){
+        createNewBookFile("book.txt");
+        cout << ans;}
+    else
+        loadBook("book.txt");
 
     int choice; // переменная для хранения выбора   
-
     do{
         showMenu();
         cin >> choice;
